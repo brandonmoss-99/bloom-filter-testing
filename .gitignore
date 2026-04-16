@@ -1,0 +1,5 @@
+.DS_Store
+
+# Ignore Python things
+__pycache__
+venv
