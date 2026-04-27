@@ -1,4 +1,4 @@
-from bloom_filter import BloomFilter
+from bloom_filter_np import BloomFilter
 import random
 import multiprocessing
 import time
