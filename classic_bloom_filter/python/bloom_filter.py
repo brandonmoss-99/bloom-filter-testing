@@ -39,7 +39,7 @@ class BloomFilter:
         # For each insert, run each hash with the list of seeds, 
         # and boolean OR that position in the data array to True
         for i in range(self.k):
-            self._data[mmh3.hash(data, seed=self._hash_seeds[i]) % self.m] |= True
+            self._data[mmh3.hash(data, seed=self._hash_seeds[i], signed=False) % self.m] = True
     
 
     def search(self, data: str) -> bool:

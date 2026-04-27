@@ -22,6 +22,10 @@ class BloomFilter:
 
     def get_optimal_hashes(self) -> int:
         return int((self.m/self.n)*math.log(2))
+    
+
+    def get_data(self) -> list[bool]:
+        return self._data
 
 
     def __create_data(self) -> list[bool]:
@@ -39,14 +43,16 @@ class BloomFilter:
     def insert(self, data: str):
         # Calculate 2 hashes, and then generate the additional hash functions
         # using those 2
-        h_0 = mmh3.hash(data, seed=self._hash_seeds[0])
-        h_1 = mmh3.hash(data, seed=self._hash_seeds[1])
-        self._data[h_0 % self.m] |= True
-        self._data[h_1 % self.m] |= True
+        h_0 = mmh3.hash(data, seed=self._hash_seeds[0], signed=False)
+        h_1 = mmh3.hash(data, seed=self._hash_seeds[1], signed=False)
 
-        # Create the remaining hashes using these 2 hashes
-        for i in range(self.k - 1):
-            self._data[(h_0 + i * h_1) % self.m] |= True
+        # Because we multiply by h_1 to generate the remaining hashes, make sure that if the hash is 0
+        # we change this to a 1, otherwise all the other hash values will multiply to become 0
+        h_1 |= 1
+
+        # Calculate the hashes
+        for i in range(self.k):
+            self._data[(h_0 + i * h_1) % self.m] = True
 
 
     def search(self, data: str) -> bool:
@@ -56,13 +62,15 @@ class BloomFilter:
 
         # Calculate 2 hashes, and then generate the additional hash functions
         # using those 2
-        h_0 = mmh3.hash(data, seed=self._hash_seeds[0])
-        h_1 = mmh3.hash(data, seed=self._hash_seeds[1])
-        if self._data[h_0 % self.m]: matches += 1
-        if self._data[h_1 % self.m]: matches += 1
+        h_0 = mmh3.hash(data, seed=self._hash_seeds[0], signed=False)
+        h_1 = mmh3.hash(data, seed=self._hash_seeds[1], signed=False)
 
-        # Create the remaining hashes using these 2 hashes
-        for i in range(self.k - 1):
+        # Because we multiply by h_1 to generate the remaining hashes, make sure that if the hash is 0
+        # we change this to a 1, otherwise all the other hash values will multiply to become 0
+        h_1 |= 1
+
+        # Calculate the hashes
+        for i in range(self.k):
             if self._data[(h_0 + i * h_1) % self.m]:
                 matches += 1
 
